@@ -121,6 +121,10 @@
                             {#console.log(globalName, currentId);#}
                             kwtxt[key] = getTextFromID(globalName, currentId);
                         }
+                        else if(value.substring(0,1) == '@'){
+                           var t = value.substring(1, value.length);
+                           kwtxt[key] = ret[t]
+                        }
                         else{
                             kwtxt[key] = value;
                         }

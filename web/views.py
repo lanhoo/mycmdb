@@ -120,20 +120,22 @@ class Json_post(View):
         ]
         q_list = []
         for i in data_list:
-            if not i['q']:
-                continue
-            q_list.append(i['q'])
+            # if not i['q']:
+            #     continue
+            # q_list.append(i['q'])
+            if i['q']:
+                q_list.append(i['q'])
 
         from web import models
 
         ret_list = list(models.Asset.objects.all().values(*q_list))
-        print(type(ret_list))
+        # print(ret_list)
         # return JsonResponse({'ret_list':ret_list, 'conf_list':'data_list'})
         # print('jsre:', JsonResponse({'ret_list': ret_list, 'conf_list': data_list}))
         # print('httpre:', HttpResponse(json.dumps({'ret_list': ret_list, 'conf_list': data_list})))
 
         # return HttpResponse(json.dumps({'ret_list': ret_list, 'conf_list': data_list}))
-        print(ret_list)
+        # print(ret_list)
         return JsonResponse({
             'ret_list': ret_list,
             'conf_list': data_list,
