@@ -1,0 +1,167 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container" style="margin-top: 30px">
+    <table class="table table-bordered">
+        <thead id="id_th">
+        {#                <tr>#}
+        {#                    <th>1</th>#}
+        {#                    <th>2</th>#}
+        {#                    <th>4</th>#}
+        {#                    <th>3</th>#}
+        {#                </tr>#}
+        </thead>
+        <tbody id="id_tb">
+        {#                <tr>#}
+        {#                    <td>a</td>#}
+        {#                    <td>b</td>#}
+        {#                    <td>c</td>#}
+        {#                    <td>d</td>#}
+        {#                </tr>#}
+        </tbody>
+    </table>
+</div>
+<script src="/static/js/jquery-1.12.4.min.js"></script>
+<script>
+    $(function () {
+        init();
+
+    });
+
+    String.prototype.format = function (kwargs) {
+        // this ="laiying: {age} - {gender}";
+        // kwargs =  {'age':18,'gender': '女'}
+        var ret = this.replace(/\{(\w+)\}/g,function (km,m) {
+            return kwargs[m];
+        });
+        return ret;
+    };
+
+    function init() {
+        $.ajax({
+            type: 'GET',
+            url: '/web/json_post',
+            dataType: 'JSON',
+            success: function (data) {
+                {#console.log('hello world!');#}
+                initGlobalData(data.global_dict);
+                showHead(data.conf_list);
+                showBody(data.ret_list, data.conf_list);
+                {#console.log(data.global_dict);#}
+
+            }
+
+        })
+    }
+
+    function showHead(confs) {
+        var tr = document.createElement('tr');
+        {#console.log(confs);#}
+
+        $.each(confs, function (i, item) {
+
+            if (item.display) {
+                var th = document.createElement('th');
+                th.innerHTML = item.title;
+                tr.append(th);
+            }
+
+        });
+        $('#id_th').append(tr);
+
+    }
+
+    function showBody(rets, confs) {
+        /*
+        confs
+        [
+        {
+            'q': 'id',
+            'title': 'ID',
+            'display': False,
+            'text': {},
+            'attrs': {}
+        }]
+        rets:
+            [
+            ret:
+            {'device_type_id': 1,
+             'idc__name': None,
+             'cabinet_num': '111',
+             'id': 1,
+             'device_status_id': 1,
+             'cabinet_order': '1'},
+             ....
+              {'device_type_id': 1, 'idc__name': None, 'cabinet_num': '12C', 'id': 2, 'device_status_id': 2, 'cabinet_order': '1'}, {'device_type_id': 3, 'idc__name': None, 'cabinet_num': '11D', 'id': 3, 'device_status_id': 3, 'cabinet_order': '1'}]
+         */
+        $.each(rets, function (i, ret) {
+            var tr = document.createElement('tr');
+            $.each(confs, function (j, conf) {
+                if(conf.display){
+                    var td = document.createElement('td');
+                    var kwtxt = {};
+                    /*
+                    conf: {
+                        'q': 'device_status_id',
+                        'title': '状态',
+                        'display': True,
+                        'text': {'content': "{n}", 'kwargs': {'n': "@@device_status_choices"}},
+                        'attrs': {'edit-enable': 'true', 'edit-type': 'select'}
+                        }
+                     'text': {'content': "{n}", 'kwargs': {'n': "@@device_status_choices"}},
+                     */
+                    $.each(conf.text.kwargs, function (key, value) {
+                        if(value.substring(0,2) == '@@'){
+                            var globalName = value.substring(2, value.length);
+                            var currentId = ret[conf.q];
+                            {#console.log(globalName, currentId);#}
+                            kwtxt[key] = getTextFromID(globalName, currentId);
+                        }
+                        else{
+                            kwtxt[key] = value;
+                        }
+                    });
+
+                    {#console.log(kwtxt);#}
+
+                    var temp = conf.text.content.format(kwtxt);
+                    td.innerHTML = temp;
+
+                    $(tr).append(td);
+                }
+            });
+            $('#id_tb').append(tr);
+        })
+    }
+
+    function initGlobalData(global_dict) {
+        $.each(global_dict,function (k,v) {
+            // k = "device_type_choices"
+            // v= [[0,'xx'],[1,'xxx']]
+
+            {#console.log(1, k, v);#}
+            window[k] = v;
+        })
+    }
+
+    function getTextFromID(name, id) {
+        var ret = null;
+        {#console.log(2, window[name], name);#}
+        $.each(window[name],function (k,item) {
+            {#console.log(item[0],item[1],id);#}
+            if(item[0] == id){
+                ret = item[1];
+                return
+            }
+        });
+        return ret;
+    }
+
+</script>
+</body>
+</html>
+
